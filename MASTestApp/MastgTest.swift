@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import os.log
 
 struct MastgTest {
     
