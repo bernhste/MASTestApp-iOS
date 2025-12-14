@@ -10,6 +10,8 @@ on:
 jobs:
   test:
     runs-on: macos-latest
+    permissions:
+      contents: read
     env:
       BUNDLE_IDENTIFIER: org.owasp.mastestapp.MASTestApp-iOS
       PLATFORM: "iOS Simulator"
