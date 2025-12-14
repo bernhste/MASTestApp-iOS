@@ -59,7 +59,7 @@ jobs:
             -derivedDataPath DerivedData \
             CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
-      - name: Find and Prepare App
+      - name: Find and Install App
         run: |
           # Locate the built .app from DerivedData
           APP_PATH=$(find DerivedData -name "*.app" | head -n 1)
@@ -67,12 +67,15 @@ jobs:
             echo "Error: Could not find the built .app file."
             exit 1
           fi
-          echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
           echo "Found app at: $APP_PATH"
+          # Boot the selected simulator if not already booted
+          xcrun simctl boot "$SIMULATOR" || echo "Simulator already booted"
+          # Install the app on the simulator
+          xcrun simctl install "$SIMULATOR" "$APP_PATH"
 
       - name: Run Maestro Tests
         run: |
-          maestro test .maestro/app-test.yaml --app "$APP_PATH"
+          maestro test .maestro/app-test.yaml $BUNDLE_IDENTIFIER
 
       - name: Upload Maestro Test Artifacts
         if: always()
