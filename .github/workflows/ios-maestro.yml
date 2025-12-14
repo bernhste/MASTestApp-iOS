@@ -74,15 +74,48 @@ jobs:
           xcrun simctl install "$SIMULATOR" "$APP_PATH"
 
       - name: Run Maestro Tests
-        run: |
-          maestro test .maestro/app-test.yaml
+        run: maestro test .maestro/app-test.yaml
 
-      - name: Upload Maestro Test Artifacts
+      - name: Build Maestro markdown report
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          REPORT_DIR="maestro-report"
+          mkdir -p "$REPORT_DIR"
+
+          cp -R ~/.maestro/tests "$REPORT_DIR/tests" || true
+
+          {
+            echo "# Maestro report"
+            echo
+            echo "## Screenshots"
+            echo
+            shopt -s globstar nullglob
+            for before in "$REPORT_DIR"/tests/**/before.png; do
+              after="${before%before.png}after.png"
+              echo "### ${before#"$REPORT_DIR"/}"
+              echo
+              echo "Before"
+              echo
+              echo "![](${before#"$REPORT_DIR"/})"
+              echo
+              if [[ -f "$after" ]]; then
+                echo "After"
+                echo
+                echo "![](${after#"$REPORT_DIR"/})"
+                echo
+              fi
+            done
+          } > "$REPORT_DIR/report.md"
+
+          echo "Maestro report artifact created at $REPORT_DIR/report.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Maestro report artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: maestro-test-results
-          path: |
-            ~/.maestro/tests/**/*
-            **/before.png
-            **/after.png
+          name: maestro-report
+          path: maestro-report
+
