@@ -92,8 +92,8 @@ jobs:
             echo
             echo "## Screenshots"
             echo
-            shopt -s globstar nullglob
-            for before in "$REPORT_DIR"/tests/**/before.png; do
+
+            find "$REPORT_DIR/tests" -name before.png | while read before; do
               after="${before%before.png}after.png"
               echo "### ${before#"$REPORT_DIR"/}"
               echo
@@ -101,7 +101,7 @@ jobs:
               echo
               echo "![](${before#"$REPORT_DIR"/})"
               echo
-              if [[ -f "$after" ]]; then
+              if [ -f "$after" ]; then
                 echo "After"
                 echo
                 echo "![](${after#"$REPORT_DIR"/})"
